@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_colors.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -12,18 +13,9 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  String _userName = 'Fidan Umudova';
+  String _userEmail = 'fidanumudova05@gmail.com';
   XFile? _selectedImage;
-  final ImagePicker _picker = ImagePicker();
-
-  // Qalereyadan şəkil seçmək üçün funksiya
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _selectedImage = image;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. ÜST PROFİL KART-I (Şəkil Seçimi ilə)
+            // 1. ÜST PROFİL KART-I
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -94,36 +86,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Row(
                     children: [
-                      // Profil Avatarı - Kliklədikdə şəkil seçilir
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: CircleAvatar(
-                          radius: 45,
-                          backgroundColor: AppColors.primary.withOpacity(0.1),
-                          backgroundImage: _selectedImage != null
-                              ? (kIsWeb
-                              ? NetworkImage(_selectedImage!.path)
-                              : FileImage(io.File(_selectedImage!.path))) as ImageProvider
-                              : null,
-                          child: _selectedImage == null
-                              ? const Icon(
-                            Icons.person,
-                            size: 50,
-                            color: AppColors.primary,
-                          )
-                              : null,
-                        ),
+                      // Profil Avatarı
+                      CircleAvatar(
+                        radius: 45,
+                        backgroundColor: AppColors.primary.withOpacity(0.1),
+                        backgroundImage: _selectedImage != null
+                            ? (kIsWeb
+                            ? NetworkImage(_selectedImage!.path)
+                            : FileImage(io.File(_selectedImage!.path))) as ImageProvider
+                            : null,
+                        child: _selectedImage == null
+                            ? const Icon(
+                          Icons.person,
+                          size: 50,
+                          color: AppColors.primary,
+                        )
+                            : null,
                       ),
                       const SizedBox(width: 16),
 
                       // Ad və Email
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Fidan Umudova',
-                              style: TextStyle(
+                              _userName,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.textDark,
@@ -132,10 +121,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            SizedBox(height: 6),
+                            const SizedBox(height: 6),
                             Text(
-                              'fidanumudova05@gmail.com',
-                              style: TextStyle(
+                              _userEmail,
+                              style: const TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey,
                                 height: 1.2,
@@ -150,11 +139,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Edit Profile Düyməsi - Kliklədikdə galereyanı açır
+                  // Edit Profile Düyməsi (Basıldıqda Edit Profile səhifəsinə keçir)
                   Align(
                     alignment: Alignment.centerRight,
                     child: InkWell(
-                      onTap: _pickImage,
+                      onTap: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditProfileScreen(
+                              currentName: _userName,
+                              currentEmail: _userEmail,
+                            ),
+                          ),
+                        );
+
+                        if (result != null && result is Map<String, dynamic>) {
+                          setState(() {
+                            _userName = result['name'] ?? _userName;
+                            _userEmail = result['email'] ?? _userEmail;
+                            if (result['image'] != null) {
+                              _selectedImage = result['image'];
+                            }
+                          });
+                        }
+                      },
                       borderRadius: BorderRadius.circular(20),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -193,7 +202,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 16),
 
-            // 2. STATİSTİKA KARTLARI (Projects, Likes, Badges)
+            // 2. STATİSTİKA KARTLARI
             Row(
               children: [
                 _buildStatCard(
@@ -335,7 +344,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Statistik Kartlar Köməkçi Widget-i
   Widget _buildStatCard({
     required IconData icon,
     required Color iconColor,
@@ -382,7 +390,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Menyu Sətiri Köməkçi Widget-i
   Widget _buildMenuItem({
     required IconData icon,
     required String title,
@@ -406,7 +413,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Xətt Köməkçi Widget-i
   Widget _buildDivider() {
     return const Divider(
       height: 1,
