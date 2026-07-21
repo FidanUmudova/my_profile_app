@@ -1,9 +1,6 @@
-import 'dart:io' as io;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,413 +10,224 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String _userName = 'Fidan Umudova';
-  String _userEmail = 'fidanumudova05@gmail.com';
-  XFile? _selectedImage;
+  String _userName = 'FuadEliyevFlutterDeveloper2026SuperLongUsername';
+  String _userEmail = 'fuad.eliyev.flutter.mobile.developer@gmail.com';
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width > 600;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F9FE),
+        backgroundColor: AppColors.background,
         elevation: 0,
         automaticallyImplyLeading: false,
         title: const Text(
           'Profile',
-          style: TextStyle(
-            color: AppColors.textDark,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: AppColors.textDark, fontSize: 24, fontWeight: FontWeight.bold),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.notifications_none_outlined,
-                    color: AppColors.textDark,
-                    size: 28,
-                  ),
-                  onPressed: () {},
-                ),
-                Positioned(
-                  right: 12,
-                  top: 12,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          IconButton(
+            icon: const Icon(Icons.notifications_none_outlined, color: AppColors.textDark, size: 28),
+            onPressed: () {},
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. ÜST PROFİL KART-I
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Row(
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: isDesktop ? 600 : double.infinity),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Profil Avatarı
-                      CircleAvatar(
-                        radius: 45,
-                        backgroundColor: AppColors.primary.withOpacity(0.1),
-                        backgroundImage: _selectedImage != null
-                            ? (kIsWeb
-                            ? NetworkImage(_selectedImage!.path)
-                            : FileImage(io.File(_selectedImage!.path))) as ImageProvider
-                            : null,
-                        child: _selectedImage == null
-                            ? const Icon(
-                          Icons.person,
-                          size: 50,
-                          color: AppColors.primary,
-                        )
-                            : null,
-                      ),
-                      const SizedBox(width: 16),
-
-                      // Ad və Email
-                      Expanded(
+                      // User Info Card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              _userName,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textDark,
-                                height: 1.2,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                            Row(
+                              children: [
+                                const CircleAvatar(
+                                  radius: 40,
+                                  backgroundColor: AppColors.primary,
+                                  child: Icon(Icons.person, size: 45, color: Colors.white),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _userName,
+                                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _userEmail,
+                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 6),
-                            Text(
-                              _userEmail,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey,
-                                height: 1.2,
+                            const SizedBox(height: 12),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: InkWell(
+                                onTap: () async {
+                                  final result = await context.push<Map<String, String>>(
+                                    '/edit-profile',
+                                    extra: {'currentName': _userName, 'currentEmail': _userEmail},
+                                  );
+                                  if (result != null) {
+                                    setState(() {
+                                      _userName = result['name'] ?? _userName;
+                                      _userEmail = result['email'] ?? _userEmail;
+                                    });
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('Edit Profile', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 13)),
+                                      SizedBox(width: 4),
+                                      Icon(Icons.edit_outlined, color: AppColors.primary, size: 16),
+                                    ],
+                                  ),
+                                ),
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
                             ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Stats Row
+                      Row(
+                        children: [
+                          _buildStatCard(Icons.people_outline, Colors.deepPurple, '24', 'Projects'),
+                          const SizedBox(width: 12),
+                          _buildStatCard(Icons.favorite_border, Colors.deepPurple, '128', 'Likes'),
+                          const SizedBox(width: 12),
+                          _buildStatCard(Icons.star_border, Colors.amber, '7', 'Badges'),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      const Text('Menu', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                      const SizedBox(height: 12),
+
+                      // Menu Items
+                      Container(
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                        child: Column(
+                          children: [
+                            _buildMenuItem(Icons.assignment_outlined, 'My Activity', () {}),
+                            _buildDivider(),
+                            _buildMenuItem(Icons.bookmark_outline, 'Saved Items', () {}),
+                            _buildDivider(),
+                            _buildMenuItem(Icons.mark_email_unread_outlined, 'My Projects', () {}),
+                            _buildDivider(),
+                            _buildMenuItem(Icons.mail_outline, 'Messages', () {}),
+                            _buildDivider(),
+                            _buildMenuItem(Icons.notifications_none_outlined, 'Notifications', () {}),
+                            _buildDivider(),
+                            _buildMenuItem(Icons.lock_outline, 'Privacy & Security', () {}),
+                            _buildDivider(),
+                            _buildMenuItem(Icons.settings_outlined, 'Settings', () => context.push('/settings')),
+                            _buildDivider(),
+                            _buildMenuItem(Icons.help_outline, 'Help & Support', () {}),
+                            _buildDivider(),
+                            _buildMenuItem(Icons.info_outline, 'About App', () {}),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-
-                  // Edit Profile Düyməsi (Basıldıqda Edit Profile səhifəsinə keçir)
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: InkWell(
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditProfileScreen(
-                              currentName: _userName,
-                              currentEmail: _userEmail,
-                            ),
-                          ),
-                        );
-
-                        if (result != null && result is Map<String, dynamic>) {
-                          setState(() {
-                            _userName = result['name'] ?? _userName;
-                            _userEmail = result['email'] ?? _userEmail;
-                            if (result['image'] != null) {
-                              _selectedImage = result['image'];
-                            }
-                          });
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Edit Profile',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                            ),
-                            SizedBox(width: 6),
-                            Icon(
-                              Icons.edit_outlined,
-                              color: AppColors.primary,
-                              size: 16,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // 2. STATİSTİKA KARTLARI
-            Row(
-              children: [
-                _buildStatCard(
-                  icon: Icons.people_alt,
-                  iconColor: Colors.deepPurple,
-                  value: '24',
-                  label: 'Projects',
                 ),
-                const SizedBox(width: 12),
-                _buildStatCard(
-                  icon: Icons.favorite,
-                  iconColor: Colors.deepPurple,
-                  value: '128',
-                  label: 'Likes',
-                ),
-                const SizedBox(width: 12),
-                _buildStatCard(
-                  icon: Icons.star,
-                  iconColor: Colors.amber,
-                  value: '7',
-                  label: 'Badges',
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            // 3. MENU BAŞLIĞI
-            const Text(
-              'Menu',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
               ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // 4. MENYU SİYAHISI
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  _buildMenuItem(
-                    icon: Icons.assignment_turned_in_outlined,
-                    title: 'My Activity',
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.bookmark_outline,
-                    title: 'Saved Items',
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.mark_email_unread_outlined,
-                    title: 'My Projects',
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.mail_outline,
-                    title: 'Messages',
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.notifications_none_outlined,
-                    title: 'Notifications',
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.lock_outline,
-                    title: 'Privacy & Security',
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.help_outline,
-                    title: 'Help & Support',
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.info_outline,
-                    title: 'About App',
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
+            );
+          },
         ),
       ),
-
-      // 5. AŞAĞIDAKİ NAVIGATION BAR
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 4,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Explore',
-          ),
-          BottomNavigationBarItem(
-            icon: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.add, color: Colors.white, size: 24),
-            ),
-            label: 'Add',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'Messages',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
+      bottomNavigationBar: _buildBottomNav(context, 4),
     );
   }
 
-  Widget _buildStatCard({
-    required IconData icon,
-    required Color iconColor,
-    required String value,
-    required String label,
-  }) {
+  Widget _buildStatCard(IconData icon, Color color, String value, String label) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
         child: Column(
           children: [
-            Icon(icon, color: iconColor, size: 26),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
-            ),
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 6),
+            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMenuItem({
-    required IconData icon,
-    required String title,
-  }) {
+  Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
-      onTap: () {},
+      onTap: onTap,
       leading: Icon(icon, color: Colors.black87, size: 22),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
-        ),
-      ),
-      trailing: const Icon(
-        Icons.chevron_right,
-        color: Colors.grey,
-        size: 20,
-      ),
+      title: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+      trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
     );
   }
 
-  Widget _buildDivider() {
-    return const Divider(
-      height: 1,
-      thickness: 0.5,
-      indent: 50,
-      endIndent: 16,
-      color: Color(0xFFEEEEEE),
-    );
-  }
+  Widget _buildDivider() => const Divider(height: 1, thickness: 0.5, indent: 50, endIndent: 16);
+}
+
+// Bottom Navigation Bar Component
+Widget _buildBottomNav(BuildContext context, int activeIndex) {
+  return BottomNavigationBar(
+    currentIndex: activeIndex,
+    type: BottomNavigationBarType.fixed,
+    selectedItemColor: AppColors.primary,
+    unselectedItemColor: Colors.grey,
+    onTap: (index) {
+      if (index == 0) context.go('/');
+      if (index == 4) context.go('/profile');
+    },
+    items: [
+      const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
+      const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Explore'),
+      BottomNavigationBarItem(
+        icon: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+          child: const Icon(Icons.add, color: Colors.white, size: 20),
+        ),
+        label: 'Add',
+      ),
+      const BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Messages'),
+      const BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+    ],
+  );
 }

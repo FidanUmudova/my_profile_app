@@ -1,8 +1,7 @@
-import 'dart:io' as io;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../widgets/custom_button.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final String currentName;
@@ -21,8 +20,10 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _nameController;
   late TextEditingController _emailController;
-  XFile? _selectedImage;
-  final ImagePicker _picker = ImagePicker();
+  final TextEditingController _phoneController = TextEditingController(text: '+994 50 123 45 67');
+  final TextEditingController _bioController = TextEditingController(
+    text: 'Passionate Flutter developer who loves building beautiful and functional apps.',
+  );
 
   @override
   void initState() {
@@ -35,145 +36,111 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
+    _bioController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _selectedImage = image;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width > 600;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F9FE),
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'Edit Profile',
-          style: TextStyle(
-            color: AppColors.textDark,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const Text('Edit Profile', style: TextStyle(color: AppColors.textDark, fontSize: 20, fontWeight: FontWeight.bold)),
         centerTitle: true,
+        actions: [
+          TextButton(
+            onPressed: () {
+              context.pop({
+                'name': _nameController.text,
+                'email': _emailController.text,
+              });
+            },
+            child: const Text('Save', style: TextStyle(color: AppColors.primary, fontSize: 16, fontWeight: FontWeight.bold)),
+          )
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-            // Profil Şəkli Dəyişmə Hissəsi
-            Center(
-              child: Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: AppColors.primary.withOpacity(0.1),
-                    backgroundImage: _selectedImage != null
-                        ? (kIsWeb
-                        ? NetworkImage(_selectedImage!.path)
-                        : FileImage(io.File(_selectedImage!.path))) as ImageProvider
-                        : null,
-                    child: _selectedImage == null
-                        ? const Icon(
-                      Icons.person,
-                      size: 55,
-                      color: AppColors.primary,
-                    )
-                        : null,
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: GestureDetector(
-                      onTap: _pickImage,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          color: Colors.white,
-                          size: 18,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: isDesktop ? 500 : double.infinity),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      Center(
+                        child: Stack(
+                          children: [
+                            const CircleAvatar(
+                              radius: 45,
+                              backgroundColor: AppColors.primary,
+                              child: Icon(Icons.person, size: 50, color: Colors.white),
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                                child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 24),
+
+                      _buildTextField(_nameController, 'Full Name', Icons.person_outline),
+                      const SizedBox(height: 16),
+                      _buildTextField(_emailController, 'Email', Icons.email_outlined),
+                      const SizedBox(height: 16),
+                      _buildTextField(_phoneController, 'Phone', Icons.phone_outlined),
+                      const SizedBox(height: 16),
+                      _buildTextField(_bioController, 'Bio', null, maxLines: 3),
+                      const SizedBox(height: 24),
+
+                      CustomButton(
+                        text: 'Save Changes',
+                        onPressed: () {
+                          context.pop({
+                            'name': _nameController.text,
+                            'email': _emailController.text,
+                          });
+                        },
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(height: 30),
+            );
+          },
+        ),
+      ),
+    );
+  }
 
-            // Ad və Soyad Giriş Meydançası
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Full Name',
-                prefixIcon: const Icon(Icons.person_outline),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Email Giriş Meydançası
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                prefixIcon: const Icon(Icons.email_outlined),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 30),
-
-            // Yadda Saxla (Save) Düyməsi
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context, {
-                  'name': _nameController.text,
-                  'email': _emailController.text,
-                  'image': _selectedImage,
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                minimumSize: const Size(double.infinity, 54),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Save Changes',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
+  Widget _buildTextField(TextEditingController controller, String label, IconData? icon, {int maxLines = 1}) {
+    return Container(
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      child: TextField(
+        controller: controller,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: icon != null ? Icon(icon, color: Colors.grey) : null,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+          filled: true,
+          fillColor: Colors.white,
         ),
       ),
     );

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'core/constants/app_colors.dart';
-import 'features/onboarding/screens/onboarding_screen.dart';
+import 'core/navigation/app_router.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,14 +10,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Profile App',
+    return MaterialApp.router(
+      routerConfig: appRouter,
+      title: 'My Profile App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.background,
+        fontFamily: 'Roboto',
         useMaterial3: true,
       ),
-      home: const OnboardingScreen(),
     );
   }
 }
